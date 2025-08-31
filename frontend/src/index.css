@@ -1,0 +1,43 @@
+/* index.css */
+@import 'tailwindcss';
+/* Tailwind layers */
+
+
+/* Custom global styles */
+html, body {
+  @apply bg-[#020316] text-[#e5e7eb] font-sans antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #6366f1;
+  border-radius: 10px;
+}
+
+/* Neon glow utility */
+.neon-glow {
+  text-shadow: 0 0 10px #ec4899, 0 0 20px #ec4899, 0 0 40px #ec4899;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Hover scale animation */
+.hover-scale {
+  @apply transition-transform duration-300 ease-in-out;
+}
+.hover-scale:hover {
+  transform: scale(1.05);
+}
