@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { motion } from "framer-motion";
 import { Particles } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import Background from "../assets/background.png";
+import Background from "../assets/yokai2.jpg";
 
 const Hero = () => {
   const particlesInit = useCallback(async (engine) => {
@@ -39,43 +39,94 @@ const Hero = () => {
 
       {/* Hero Text */}
       <div className="relative z-10 text-center px-4">
-        {/* Animated Title */}
-        <motion.h1
-  className="text-5xl md:text-6xl font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00f7ff] via-[#ff00ff] to-[#b700ff] bg-[length:300%_300%] drop-shadow-md tracking-wide"
-  initial={{ opacity: 0, y: 50 }}
-  animate={{ 
-    opacity: 1, 
-    y: [0, -10, 0], // Subtle bounce effect
-    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-  }}
-  transition={{ 
-    opacity: { duration: 0.8, ease: "easeOut" },
-    y: { duration: 1, ease: "easeInOut", times: [0, 0.5, 1] },
-    backgroundPosition: { duration: 5, repeat: Infinity, ease: "linear" },
-  }}
-  whileHover={{ 
-    scale: 1.05,
-    textShadow: "0 0 15px rgba(0, 247, 255, 0.9), 0 0 30px rgba(255, 0, 255, 0.7)",
-  }}
->
-  <motion.span
-    animate={{
-      textShadow: [
-        "0 0 8px rgba(0, 247, 255, 0.7)",
-        "0 0 12px rgba(255, 0, 255, 0.7)",
-        "0 0 16px rgba(183, 0, 255, 0.7)",
-      ],
-    }}
-    transition={{
-      duration: 2.5,
-      repeat: Infinity,
-      ease: "easeInOut",
-    }}
-    className="bg-gradient-to-r from-[#00f7ff] via-[#ff00ff] to-[#b700ff] bg-[length:300%_300%] bg-clip-text text-transparent inline-block"
-  >
-    Urban Yokai
-  </motion.span>
-</motion.h1>
+        {/* Clean Holographic Title */}
+        <div className="relative">
+          {/* Main holographic layer */}
+          <motion.h1
+            className="text-5xl md:text-6xl font-orbitron font-bold text-white tracking-wide"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              textShadow: [
+                "0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(236, 72, 153, 0.3)",
+                "0 0 15px rgba(236, 72, 153, 0.5), 0 0 30px rgba(168, 85, 247, 0.3)",
+                "0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(236, 72, 153, 0.3)"
+              ]
+            }}
+            transition={{
+              opacity: { duration: 0.8, ease: "easeOut" },
+              y: { duration: 1, ease: "easeOut" },
+              textShadow: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+            }}
+            whileHover={{
+              scale: 1.02,
+              textShadow: "0 0 20px rgba(168, 85, 247, 0.7), 0 0 40px rgba(236, 72, 153, 0.5)"
+            }}
+          >
+            Urban Yokai
+          </motion.h1>
+
+          {/* Pink Neon Blossom Particles */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Pink neon blossom particles */}
+            {[...Array(15)].map((_, i) => (
+              <motion.div
+                key={`blossom-${i}`}
+                className="absolute w-2 h-2 bg-pink-400 rounded-full shadow-[0_0_8px_#f472b6]"
+                initial={{
+                  x: Math.random() * 400 - 200,
+                  y: Math.random() * 80 - 40,
+                  opacity: 0,
+                  scale: 0
+                }}
+                animate={{
+                  y: [0, -15, 0],
+                  opacity: [0, 0.9, 0],
+                  scale: [0, 1.3, 0]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.3,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  left: `${20 + i * 5}%`,
+                  top: `${30 + (i % 3) * 20}%`
+                }}
+              />
+            ))}
+
+            {/* Small twinkling particles */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={`small-${i}`}
+                className="absolute w-1 h-1 bg-cyan-300 rounded-full"
+                initial={{
+                  x: Math.random() * 600 - 300,
+                  y: Math.random() * 120 - 60,
+                  opacity: 0
+                }}
+                animate={{
+                  y: [0, -20, 0],
+                  opacity: [0, 1, 0],
+                  scale: [0, 1, 0]
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.4,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  left: `${10 + i * 10}%`,
+                  top: `${20 + (i % 3) * 25}%`
+                }}
+              />
+            ))}
+          </div>
+        </div>
         {/* Subtitle with blinking effect */}
         <motion.p
           className="mt-6 text-4xl md:text-3xl font-large text-yellow-200"

@@ -18,7 +18,7 @@ const upload = multer({ dest: "uploads/" });
 // 📌 Create product with multiple image upload and tags
 router.post('/', upload.array('images', 5), async (req, res) => {
   try {
-    const { title, description, price, category, stock, tags } = req.body;
+    const { title, description, price, category, subcategory, stock, tags } = req.body;
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
@@ -37,6 +37,7 @@ router.post('/', upload.array('images', 5), async (req, res) => {
       description,
       price,
       category,
+      subcategory,
       images: imageUrls,
       stock,
       tags: tagArr,
@@ -51,7 +52,7 @@ router.post('/', upload.array('images', 5), async (req, res) => {
 // 📌 Get all products
 router.get('/', async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().populate('category').populate('subcategory');
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });

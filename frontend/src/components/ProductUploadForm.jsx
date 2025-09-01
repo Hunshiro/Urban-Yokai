@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const ProductUploadForm = ({ onProductUploaded }) => {
   const [form, setForm] = useState({
@@ -6,12 +6,51 @@ const ProductUploadForm = ({ onProductUploaded }) => {
     description: "",
     price: "",
     category: "",
+    subcategory: "",
     stock: "",
     tags: "",
     images: [],
   });
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (form.category) {
+      fetchSubcategories(form.category);
+    } else {
+      setSubcategories([]);
+      setForm(prev => ({ ...prev, subcategory: "" }));
+    }
+  }, [form.category]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("/api/categories");
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      const data = await res.json();
+      setCategories(data);
+    } catch (err) {
+      setError("Failed to load categories");
+    }
+  };
+
+  const fetchSubcategories = async (categoryId) => {
+    try {
+      const res = await fetch("/api/categories");
+      if (!res.ok) throw new Error("Failed to fetch subcategories");
+      const data = await res.json();
+      const category = data.find(cat => cat._id === categoryId);
+      setSubcategories(category?.subcategories || []);
+    } catch (err) {
+      setError("Failed to load subcategories");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -30,8 +69,11 @@ const ProductUploadForm = ({ onProductUploaded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent multiple submissions
+
     setLoading(true);
     setError("");
+
     const data = new FormData();
     Object.entries(form).forEach(([key, value]) => {
       if (key === "images") {
@@ -44,17 +86,37 @@ const ProductUploadForm = ({ onProductUploaded }) => {
         data.append(key, value);
       }
     });
+
     try {
       const res = await fetch("/api/products", {
         method: "POST",
         body: data,
       });
-      if (!res.ok) throw new Error("Upload failed");
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(errorData.error || "Upload failed");
+      }
+
       const product = await res.json();
-  setForm({ title: "", description: "", price: "", category: "", stock: "", tags: "", images: [] });
+
+      // Reset form only on success
+      setForm({
+        title: "",
+        description: "",
+        price: "",
+        category: "",
+        subcategory: "",
+        stock: "",
+        tags: "",
+        images: []
+      });
+
       if (onProductUploaded) onProductUploaded(product);
+
     } catch (err) {
-      setError(err.message);
+      console.error("Upload error:", err);
+      setError(err.message || "Failed to upload product. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +128,34 @@ const ProductUploadForm = ({ onProductUploaded }) => {
   <input name="title" value={form.title} onChange={handleChange} placeholder="Title" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
   <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
   <input name="price" value={form.price} onChange={handleChange} placeholder="Price" type="number" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
-  <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
+  <select
+    name="category"
+    value={form.category}
+    onChange={handleChange}
+    className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base"
+    required
+  >
+    <option value="">Select Category</option>
+    {categories.map((category) => (
+      <option key={category._id} value={category._id}>
+        {category.name}
+      </option>
+    ))}
+  </select>
+  <select
+    name="subcategory"
+    value={form.subcategory}
+    onChange={handleChange}
+    className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base"
+    required
+  >
+    <option value="">Select Subcategory</option>
+    {subcategories.map((subcat) => (
+      <option key={subcat._id} value={subcat._id}>
+        {subcat.name}
+      </option>
+    ))}
+  </select>
   <input name="stock" value={form.stock} onChange={handleChange} placeholder="Stock" type="number" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
   <input name="tags" value={form.tags} onChange={handleChange} placeholder="Tags (comma separated)" className="w-full mb-4 px-4 py-2 rounded-3xl border border-accent bg-background text-text-base" />
   <input name="images" type="file" accept="image/*" multiple onChange={handleChange} className="w-full mb-6 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />

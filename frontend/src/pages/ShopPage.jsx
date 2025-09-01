@@ -1,36 +1,412 @@
+
 import React, { useState, useEffect } from "react";
+import { useCart } from "../context/CartContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import ProductGrid from "../components/ProductGrid";
 import ProductModal from "../components/ProductModal";
-import { useCart } from "../context/CartContext";   // ✅ import
 
 const ShopPage = ({ showToast }) => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const { addToCart } = useCart();  // ✅ get addToCart from context
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [priceRange, setPriceRange] = useState([0, 10000]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch("/api/products")
-      .then((res) => res.json())
-      .then(setProducts);
+    const fetchData = async () => {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch("/api/products"),
+          fetch("/api/categories")
+        ]);
+        const productsData = await productsRes.json();
+        const categoriesData = await categoriesRes.json();
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  return (
-    <div className="bg-background min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 p-8">
-        <h2 className="font-heading text-3xl text-heading mb-6">All Products</h2>
-        <ProductGrid products={products} onProductClick={setSelectedProduct} />
-        
-        {/* ✅ Pass addToCart + showToast into modal */}
-        <ProductModal 
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
-          addToCart={addToCart} 
-          showToast={showToast} 
+  // Filter and sort products
+  const filteredProducts = products
+    .filter((product) => {
+      const matchesSearch = product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory ||
+        (product.category?._id === selectedCategory || product.category === selectedCategory);
+      const matchesSubcategory = !selectedSubcategory ||
+        (product.subcategory?._id === selectedSubcategory || product.subcategory === selectedSubcategory);
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesPrice;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "price-low":
+          return a.price - b.price;
+        case "price-high":
+          return b.price - a.price;
+        case "name":
+          return a.title.localeCompare(b.title);
+        case "newest":
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        default:
+          return 0;
+      }
+    });
+
+  const clearFilters = () => {
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setSearchTerm("");
+    setPriceRange([0, 10000]);
+    setSortBy("name");
+  };
+
+  const getSelectedCategoryName = () => {
+    if (!selectedCategory) return "All Products";
+    const category = categories.find(c => c._id === selectedCategory);
+    return category?.name || "Category";
+  };
+
+  const getSelectedSubcategoryName = () => {
+    if (!selectedCategory || !selectedSubcategory) return "";
+    const category = categories.find(c => c._id === selectedCategory);
+    const subcategory = category?.subcategories?.find(s => s._id === selectedSubcategory);
+    return subcategory?.name || "";
+  };
+
+  const ProductCard = ({ product }) => (
+    <div
+      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
+      onClick={() => setSelectedProduct(product)}
+    >
+      {/* Image Container */}
+      <div className="relative h-64 bg-gray-50 overflow-hidden">
+        <img
+          src={product.images?.[0] || product.image || "/placeholder.jpg"}
+          alt={product.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-      </main>
+        <div className="absolute top-3 right-3">
+          <button
+            className="w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart({ ...product, qty: 1 });
+              showToast && showToast(`${product.title} added to cart!`);
+            }}
+          >
+            <span className="text-lg">🛒</span>
+          </button>
+        </div>
+        {/* Tags */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+            {product.tags.slice(0, 2).map((tag, idx) => (
+              <span
+                key={idx}
+                className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full font-medium"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        <div className="mb-2">
+          <span className="text-xs text-gray-500 uppercase tracking-wide">
+            {product.category?.name || product.category}
+          </span>
+        </div>
+        <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          {product.title}
+        </h3>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          {product.description}
+        </p>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-2xl font-bold text-primary">₹{product.price}</span>
+            {product.originalPrice && (
+              <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="flex text-yellow-400">
+              {"★".repeat(4)}
+              <span className="text-gray-300">★</span>
+            </div>
+            <span className="text-sm text-gray-600">(4.2)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading products...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Header />
+
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-primary via-purple-600 to-accent text-white">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              Discover Amazing Products
+            </h1>
+            <p className="text-xl opacity-90 mb-8">
+              Shop from our curated collection of premium products
+            </p>
+            <div className="max-w-md mx-auto relative">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-6 py-3 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50"
+              />
+              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-accent text-white px-4 py-2 rounded-full hover:bg-accent/80 transition">
+                🔍
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
+        {/* Sidebar */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
+            <h3 className="font-bold text-lg mb-4 text-gray-900">Categories</h3>
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedSubcategory(null);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg transition ${
+                  !selectedCategory ? 'bg-primary text-white' : 'hover:bg-gray-100 text-gray-700'
+                }`}
+              >
+                All Products
+              </button>
+              {categories.map((category) => (
+                <div key={category._id}>
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(category._id);
+                      setSelectedSubcategory(null);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition ${
+                      selectedCategory === category._id ? 'bg-primary text-white' : 'hover:bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                  {selectedCategory === category._id && category.subcategories?.length > 0 && (
+                    <div className="ml-4 mt-2 space-y-1">
+                      {category.subcategories.map((sub) => (
+                        <button
+                          key={sub._id}
+                          onClick={() => setSelectedSubcategory(sub._id)}
+                          className={`w-full text-left px-3 py-1 text-sm rounded transition ${
+                            selectedSubcategory === sub._id ? 'bg-accent text-white' : 'hover:bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Price Filter */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h4 className="font-semibold mb-4 text-gray-900">Price Range</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm text-gray-600">Min: ₹{priceRange[0]}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="5000"
+                    value={priceRange[0]}
+                    onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Max: ₹{priceRange[1]}</label>
+                  <input
+                    type="range"
+                    min="1000"
+                    max="10000"
+                    value={priceRange[1]}
+                    onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Breadcrumb */}
+          <div className="mb-6">
+            <nav className="flex items-center space-x-2 text-sm text-gray-600">
+              <button
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedSubcategory(null);
+                }}
+                className="hover:text-primary transition"
+              >
+                Home
+              </button>
+              <span>/</span>
+              <span className="text-gray-900 font-medium">{getSelectedCategoryName()}</span>
+              {getSelectedSubcategoryName() && (
+                <>
+                  <span>/</span>
+                  <span className="text-gray-900 font-medium">{getSelectedSubcategoryName()}</span>
+                </>
+              )}
+            </nav>
+          </div>
+
+          {/* Mobile Filters Toggle */}
+          <div className="lg:hidden mb-6">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow border"
+            >
+              <span>Filters</span>
+              <span className={`transform transition ${showFilters ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+          </div>
+
+          {/* Mobile Filters */}
+          {showFilters && (
+            <div className="lg:hidden bg-white rounded-2xl shadow-lg p-6 mb-6">
+              <div className="grid grid-cols-2 gap-4">
+                {categories.map((category) => (
+                  <button
+                    key={category._id}
+                    onClick={() => {
+                      setSelectedCategory(category._id);
+                      setSelectedSubcategory(null);
+                      setShowFilters(false);
+                    }}
+                    className={`px-3 py-2 rounded-lg text-sm transition ${
+                      selectedCategory === category._id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Results Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {getSelectedCategoryName()}
+                {getSelectedSubcategoryName() && ` - ${getSelectedSubcategoryName()}`}
+              </h2>
+              <p className="text-gray-600">
+                {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="newest">Newest First</option>
+              </select>
+
+              {(selectedCategory || selectedSubcategory || searchTerm || priceRange[0] > 0 || priceRange[1] < 10000) && (
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product._id || product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+              <p className="text-gray-600 mb-4">Try adjusting your filters or search terms</p>
+              <button
+                onClick={clearFilters}
+                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <ProductModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        addToCart={addToCart}
+        showToast={showToast}
+      />
+
       <Footer />
     </div>
   );

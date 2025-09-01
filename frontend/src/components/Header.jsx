@@ -1,41 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCart } from "../context/CartContext";
+import logo from "../assets/logo3.png"
 
-const NeonLogo = () => (
-  <motion.svg
-    width="120"
-    height="40"
-    viewBox="0 0 120 40"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    initial={{ filter: "blur(2px)", opacity: 0 }}
-    animate={{ filter: "blur(0px)", opacity: 1 }}
-    transition={{ duration: 1 }}
-    className="drop-shadow-[0_0_16px_#ec4899]"
-  >
-    <text
-      x="0"
-      y="28"
-      fontFamily="'Press Start 2P', cursive"
-      fontSize="28"
-      fill="#f472b6"
-      stroke="#22d3ee"
-      strokeWidth="2"
-    >
-      RAPCOD
-    </text>
-    <line
-      x1="10"
-      y1="35"
-      x2="110"
-      y2="35"
-      stroke="#22d3ee"
-      strokeWidth="3"
-      strokeDasharray="8 4"
-    />
-  </motion.svg>
-);
+// Assuming CartContext is defined elsewhere
+import { useCart } from "../context/CartContext"; // Adjust path as needed
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -48,6 +16,12 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { cart } = useCart();
 
+  // Get user profile from localStorage
+  let userProfile = null;
+  try {
+    userProfile = JSON.parse(window.localStorage.getItem('userProfile'));
+  } catch {}
+
   const toggleMenu = () => {
     setMenuOpen((prev) => !prev);
   };
@@ -56,76 +30,97 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-black bg-opacity-80 backdrop-blur-xl flex items-center justify-between px-8 py-4 shadow-lg border border-gray-800 rounded-3xl">
-        <div className="flex items-center gap-4">
-          {/* Animated Neon SVG Logo */}
-          <NeonLogo />
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-white to-gray-50 h-22 flex items-center justify-between px-6 py-4 shadow-md border-b border-gray-200">
+        <div className="flex items-center">
+          {/* Animated Logo Placeholder - Replace src with your actual logo */}
+          <motion.img
+            src={logo} // Adjust path to your logo
+            alt="Urban Yokai Logo"
+            className="h-20 w-20 rounded-full"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          />
         </div>
-        
+
         {/* Desktop Navbar */}
-        <nav className="hidden md:flex gap-8 text-white font-medium">
+        <nav className="hidden md:flex gap-6 text-gray-800 font-semibold">
           {navLinks.map((link) => (
-            link.label === "Cart" ? (
-              <a
-                key={link.href}
-                href={link.href}
-                className="group relative px-3 py-1 rounded-3xl transition text-lg hover:text-pink-400"
-              >
-                <span className="relative z-10">{link.label}</span>
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-neonPink animate-bounce">
-                    {cartCount}
-                  </span>
-                )}
-                <span className="absolute left-0 right-0 bottom-0 h-1 rounded-full bg-gradient-to-r from-pink-500 via-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-all duration-300 blur-sm"></span>
-              </a>
-            ) : (
-              <a
-                key={link.href}
-                href={link.href}
-                className="group relative px-3 py-1 rounded-3xl transition text-lg hover:text-pink-400"
-              >
-                <span className="relative z-10">{link.label}</span>
-                <span className="absolute left-0 right-0 bottom-0 h-1 rounded-full bg-gradient-to-r from-pink-500 via-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-all duration-300 blur-sm"></span>
-              </a>
-            )
+            <motion.a
+              key={link.href}
+              href={link.href}
+              className="group relative px-4 py-2 rounded-full transition-all text-lg hover:text-indigo-600"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="relative z-10">{link.label}</span>
+              {link.label === "Cart" && cartCount > 0 && (
+                <motion.span
+                  className="absolute -top-2 -right-2 bg-indigo-500 text-white text-xs font-bold rounded-full px-2 py-1 shadow-lg"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  {cartCount}
+                </motion.span>
+              )}
+              <motion.span
+                className="absolute left-0 right-0 bottom-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 rounded-full"
+                initial={{ scaleX: 0 }}
+                whileHover={{ scaleX: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+            </motion.a>
           ))}
         </nav>
-        
+
+        {/* Google Login/Profile */}
+        <div>
+          {userProfile ? (
+            <img
+              src={userProfile.picture || '/profile.png'}
+              alt="Profile"
+              className="h-10 w-10 rounded-full border-2 border-primary"
+              title={userProfile.name}
+            />
+          ) : (
+            <a href="/api/auth/google" className="px-6 py-2 bg-primary text-black rounded-2xl font-bold hover:bg-accent transition">Login</a>
+          )}
+        </div>
+
         {/* Mobile Navbar Toggle */}
-        <button
-          className="md:hidden flex flex-col items-center justify-center w-12 h-12 rounded-full bg-black bg-opacity-70 border border-gray-700 shadow-[0_0_10px_#ec4899] focus:outline-none focus:ring-2 focus:ring-cyan-400 z-50 relative"
+        <motion.button
+          className="md:hidden flex flex-col items-center justify-center w-10 h-10 rounded-full bg-gray-100 border border-gray-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 z-50"
           onClick={toggleMenu}
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
+          whileTap={{ scale: 0.9 }}
         >
           <motion.span
-            className="block w-6 h-1 bg-cyan-400 rounded-full mb-1.5"
+            className="block w-5 h-0.5 bg-indigo-600 rounded-full mb-1"
             animate={{
               rotate: menuOpen ? 45 : 0,
-              y: menuOpen ? 4 : 0,
-              backgroundColor: menuOpen ? "#f472b6" : "#22d3ee",
+              y: menuOpen ? 3 : 0,
+              backgroundColor: menuOpen ? "#ec4899" : "#4f46e5",
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-          ></motion.span>
+          />
           <motion.span
-            className="block w-6 h-1 bg-cyan-400 rounded-full mb-1.5"
+            className="block w-5 h-0.5 bg-indigo-600 rounded-full mb-1"
             animate={{
               opacity: menuOpen ? 0 : 1,
               scaleX: menuOpen ? 0 : 1,
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-          ></motion.span>
+          />
           <motion.span
-            className="block w-6 h-1 bg-cyan-400 rounded-full"
+            className="block w-5 h-0.5 bg-indigo-600 rounded-full"
             animate={{
               rotate: menuOpen ? -45 : 0,
-              y: menuOpen ? -4 : 0,
-              backgroundColor: menuOpen ? "#f472b6" : "#22d3ee",
+              y: menuOpen ? -3 : 0,
+              backgroundColor: menuOpen ? "#ec4899" : "#4f46e5",
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-          ></motion.span>
-        </button>
+          />
+        </motion.button>
       </header>
 
       {/* Mobile Menu Overlay */}
@@ -135,55 +130,55 @@ const Header = () => {
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.6 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              className="fixed inset-0 bg-gray-900 z-40"
               onClick={() => setMenuOpen(false)}
             />
-            
+
             {/* Mobile Menu Drawer */}
             <motion.nav
               initial={{ x: "100%", opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: "100%", opacity: 0 }}
-              transition={{ 
-                duration: 0.4, 
+              transition={{
+                duration: 0.4,
                 ease: "easeInOut",
                 type: "spring",
                 damping: 25,
-                stiffness: 200
+                stiffness: 200,
               }}
-              className="fixed top-0 right-0 w-64 h-full bg-black bg-opacity-95 backdrop-blur-xl shadow-[0_0_20px_#ec4899] border-l border-gray-800 z-50 flex flex-col gap-8 pt-24 px-8"
+              className="fixed top-0 right-0 w-72 h-full bg-white bg-opacity-95 backdrop-blur-lg shadow-xl border-l border-gray-200 z-50 flex flex-col gap-6 pt-20 px-6"
             >
               {navLinks.map((link, index) => (
                 <motion.a
                   key={link.href}
                   href={link.href}
-                  className="text-xl text-cyan-400 hover:text-pink-400 transition-colors duration-300 relative group"
+                  className="text-lg text-gray-800 hover:text-indigo-600 font-semibold transition-colors duration-300 relative group"
                   onClick={() => setMenuOpen(false)}
                   initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: 50, opacity: 0 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1,
                     duration: 0.3,
-                    ease: "easeOut"
+                    ease: "easeOut",
                   }}
                 >
                   {link.label}
                   <motion.span
-                    className="absolute left-0 bottom-0 h-0.5 bg-gradient-to-r from-pink-500 to-cyan-400 rounded-full"
+                    className="absolute left-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-400 to-pink-400 rounded-full"
                     initial={{ width: 0 }}
                     whileHover={{ width: "100%" }}
                     transition={{ duration: 0.3 }}
                   />
                 </motion.a>
               ))}
-              
+
               {/* Decorative neon line */}
               <motion.div
-                className="mt-8 w-full h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
+                className="mt-6 w-full h-px bg-gradient-to-r from-transparent via-indigo-400 to-transparent"
                 initial={{ scaleX: 0, opacity: 0 }}
                 animate={{ scaleX: 1, opacity: 1 }}
                 exit={{ scaleX: 0, opacity: 0 }}

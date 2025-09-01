@@ -21,9 +21,9 @@ const ProductModal = ({ product, onClose, showToast }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-xl flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
       <motion.div
-        className="bg-background bg-opacity-90 backdrop-blur-xl rounded-3xl shadow-neonBlue border border-accent p-10 max-w-lg w-full relative animate-fade-in-up"
+        className="bg-white rounded-3xl shadow-2xl border border-gray-200 p-10 max-w-lg w-full relative"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5, type: "spring" }}
@@ -31,7 +31,7 @@ const ProductModal = ({ product, onClose, showToast }) => {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-accent text-3xl font-special hover:text-primary transition"
+          className="absolute top-4 right-4 text-gray-400 text-3xl hover:text-gray-600 transition"
         >
           &times;
         </button>
@@ -45,7 +45,7 @@ const ProductModal = ({ product, onClose, showToast }) => {
                   <img
                     src={img}
                     alt={product.title}
-                    className="h-48 w-auto mx-auto rounded-xl drop-shadow-neonPink object-contain"
+                    className="h-48 w-auto mx-auto rounded-xl shadow-lg object-contain"
                   />
                 </SwiperSlide>
               ))}
@@ -54,22 +54,22 @@ const ProductModal = ({ product, onClose, showToast }) => {
             <img
               src={product.images?.[0] || product.image}
               alt={product.title}
-              className="h-48 w-auto mx-auto rounded-xl drop-shadow-neonPink object-contain"
+              className="h-48 w-auto mx-auto rounded-xl shadow-lg object-contain"
             />
           )}
         </div>
 
         {/* Details */}
-        <h2 className="font-heading text-3xl text-heading mb-2 drop-shadow-neonPink">
+        <h2 className="font-heading text-3xl text-gray-800 mb-2">
           {product.title}
         </h2>
         {product.category && (
-          <p className="text-text-muted mb-2 font-special">{product.category}</p>
+          <p className="text-gray-600 mb-2 font-medium">{product.category?.name || product.category}</p>
         )}
         {product.description && (
-          <p className="text-text-base mb-4">{product.description}</p>
+          <p className="text-gray-700 mb-4">{product.description}</p>
         )}
-        <span className="text-primary font-bold text-2xl mb-4 block">
+        <span className="text-blue-600 font-bold text-2xl mb-4 block">
           ₹{product.price}
         </span>
 
@@ -79,7 +79,7 @@ const ProductModal = ({ product, onClose, showToast }) => {
             {product.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1 bg-accent text-heading rounded-full text-xs font-bold shadow-neonBlue animate-fade-in-up"
+                className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold shadow-sm border border-indigo-200"
               >
                 {tag}
               </span>
@@ -91,8 +91,8 @@ const ProductModal = ({ product, onClose, showToast }) => {
         <div className="flex flex-col items-center mt-8 gap-6">
           <div className="w-full">
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-heading">Quantity:</span>
-              <span className="text-primary font-bold text-lg">{qty}</span>
+              <span className="font-bold text-gray-800">Quantity:</span>
+              <span className="text-blue-600 font-bold text-lg">{qty}</span>
             </div>
             <input
               type="range"
@@ -100,20 +100,19 @@ const ProductModal = ({ product, onClose, showToast }) => {
               max={product.stock || 20}
               value={qty}
               onChange={(e) => setQty(Number(e.target.value))}
-              className="w-full accent-primary cursor-pointer"
+              className="w-full accent-blue-500 cursor-pointer"
             />
           </div>
 
           <button
             onClick={handleAddToCart}
-            className="w-full flex items-center justify-center gap-3 px-8 py-3 
-              bg-gradient-to-r from-primary via-accent to-secondary 
-              text-white rounded-3xl font-bold text-lg 
-              shadow-neonPink hover:scale-105 transition-all duration-300 
-              glow-trail border-2 border-primary focus:outline-none focus:ring-2 focus:ring-accent"
-            style={{ boxShadow: "0 0 16px #ec4899, 0 2px 8px #2563eb" }}
+            className="w-full flex items-center justify-center gap-3 px-8 py-3
+              bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
+              text-white rounded-3xl font-bold text-lg
+              shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300
+              border-2 border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
-            <span className="material-icons text-2xl"></span>
+            <span className="text-2xl">🛒</span>
             Add {qty > 1 ? `${qty} Items` : "to Cart"}
           </button>
         </div>

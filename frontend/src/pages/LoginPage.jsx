@@ -75,6 +75,19 @@ const LoginPage = () => {
           </button>
         </form>
 
+        {/* Google Login */}
+        <div className="flex items-center gap-4 my-4">
+          <hr className="flex-1 border-accent/30" />
+          <span className="text-text-muted">or</span>
+          <hr className="flex-1 border-accent/30" />
+        </div>
+        <a
+          href="/api/auth/google"
+          className="w-full py-3 bg-blue-500 text-white rounded-xl font-bold text-lg shadow hover:bg-blue-600 transition flex items-center justify-center gap-2"
+        >
+          <span className="material-icons">account_circle</span> Login with Google
+        </a>
+
         {/* Footer */}
         <div className="text-center text-text-muted mt-2">
           Don’t have an account?{" "}

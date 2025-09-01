@@ -16,16 +16,22 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product) => {
     setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.id === product.id);
+      // Ensure product has a unique id (handle MongoDB _id)
+      const productId = product.id || product._id;
+      if (!productId) return prevCart;
       const addQty = product.qty && product.qty > 0 ? product.qty : 1;
-      if (existing) {
-        return prevCart.map((item) =>
-          item.id === product.id
-            ? { ...item, qty: item.qty + addQty }
-            : item
-        );
+      let found = false;
+      const updatedCart = prevCart.map((item) => {
+        if (item.id === productId) {
+          found = true;
+          return { ...item, qty: item.qty + addQty };
+        }
+        return item;
+      });
+      if (!found) {
+        return [...prevCart, { ...product, id: productId, qty: addQty }];
       }
-      return [...prevCart, { ...product, qty: addQty }];
+      return updatedCart;
     });
   };
 
@@ -33,8 +39,24 @@ export const CartProvider = ({ children }) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
+  const updateQuantity = (id, qty) => {
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.id === id ? { ...item, qty: Math.max(1, qty) } : item
+      )
+    );
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        setCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

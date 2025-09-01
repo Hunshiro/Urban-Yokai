@@ -4,6 +4,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProductUploadForm from "../components/ProductUploadForm";
 import ProductGrid from "../components/ProductGrid";
+import CategoryCreateForm from "../components/CategoryCreateForm";
+import SubcategoryCreateForm from "../components/SubcategoryCreateForm";
 
 const stats = [
   { title: "Total Users", value: 1200, accent: "border-primary" },
@@ -16,6 +18,7 @@ const stats = [
 
 const AdminPage = () => {
   const [products, setProducts] = React.useState([]);
+  const [categories, setCategories] = React.useState([]);
   const [activeTab, setActiveTab] = React.useState("overview");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterCategory, setFilterCategory] = React.useState("all");
@@ -28,8 +31,15 @@ const AdminPage = () => {
       .then(setProducts);
   };
 
+  const fetchCategories = () => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then(setCategories);
+  };
+
   React.useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const filteredProducts = products.filter(product => {
@@ -84,6 +94,18 @@ const AdminPage = () => {
             id="overview"
             label="Overview"
             isActive={activeTab === "overview"}
+            onClick={setActiveTab}
+          />
+          <TabButton
+            id="categories"
+            label="Categories"
+            isActive={activeTab === "categories"}
+            onClick={setActiveTab}
+          />
+          <TabButton
+            id="subcategories"
+            label="Subcategories"
+            isActive={activeTab === "subcategories"}
             onClick={setActiveTab}
           />
           <TabButton
@@ -192,6 +214,89 @@ const AdminPage = () => {
           </div>
         )}
 
+        {/* Categories Tab */}
+        {activeTab === "categories" && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading text-2xl text-heading">Category Management</h3>
+              <button className="bg-primary text-white px-6 py-3 rounded-xl font-medium shadow-neonPink hover:shadow-lg transition-all">
+                Add New Category
+              </button>
+            </div>
+
+            <div className="bg-accent/10 rounded-2xl p-6 border border-accent/30">
+              <CategoryCreateForm onCategoryCreated={fetchCategories} />
+            </div>
+
+            <div className="bg-accent/10 rounded-2xl p-6 border border-accent/30">
+              <h4 className="font-heading text-xl text-heading mb-4">Existing Categories</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {categories.map(category => (
+                  <div key={category._id} className="bg-background rounded-xl p-4 border border-accent/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-heading">{category.name}</h5>
+                      <div className="flex gap-2">
+                        <button className="text-accent hover:text-accent/80 text-sm">Edit</button>
+                        <button className="text-red-500 hover:text-red-400 text-sm">Delete</button>
+                      </div>
+                    </div>
+                    <p className="text-sm text-text">{category.description}</p>
+                    <div className="mt-4">
+                      <h6 className="font-semibold text-heading mb-2">Subcategories:</h6>
+                      <ul className="list-disc list-inside text-sm text-text">
+                        {category.subcategories?.map(subcat => (
+                          <li key={subcat._id}>{subcat.name}</li>
+                        )) || <li>No subcategories</li>}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Subcategories Tab */}
+        {activeTab === "subcategories" && (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading text-2xl text-heading">Subcategory Management</h3>
+              <button className="bg-primary text-white px-6 py-3 rounded-xl font-medium shadow-neonPink hover:shadow-lg transition-all">
+                Add New Subcategory
+              </button>
+            </div>
+
+            <div className="bg-accent/10 rounded-2xl p-6 border border-accent/30">
+              <SubcategoryCreateForm onSubcategoryCreated={fetchCategories} />
+            </div>
+
+            <div className="bg-accent/10 rounded-2xl p-6 border border-accent/30">
+              <h4 className="font-heading text-xl text-heading mb-4">Existing Subcategories</h4>
+              <div className="space-y-4">
+                {categories.map(category => (
+                  <div key={category._id} className="bg-background rounded-xl p-4 border border-accent/20">
+                    <h5 className="font-medium text-heading mb-3">{category.name}</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {category.subcategories?.map(subcategory => (
+                        <div key={subcategory._id} className="bg-accent/10 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-heading">{subcategory.name}</span>
+                            <div className="flex gap-2">
+                              <button className="text-accent hover:text-accent/80 text-xs">Edit</button>
+                              <button className="text-red-500 hover:text-red-400 text-xs">Delete</button>
+                            </div>
+                          </div>
+                          <p className="text-xs text-text mt-1">{subcategory.description}</p>
+                        </div>
+                      )) || <p className="text-sm text-text">No subcategories yet</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Products Tab */}
         {activeTab === "products" && (
           <div className="space-y-8">
@@ -245,10 +350,11 @@ const AdminPage = () => {
                     className="bg-accent/10 border border-accent/30 rounded-xl px-4 py-2 text-heading focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="all">All Categories</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="books">Books</option>
-                    <option value="home">Home & Garden</option>
+                    {categories.map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -272,7 +378,7 @@ const AdminPage = () => {
                     <div key={product._id || product.id} className="bg-white rounded-2xl shadow-md border border-[#e5e7eb] p-6 flex flex-col relative">
                       <img src={product.images?.[0] || product.image} alt={product.title} className="h-32 w-full object-contain rounded-xl mb-4 bg-[#f9fafb]" />
                       <h3 className="font-sans text-lg font-semibold text-[#111827] mb-1">{product.title}</h3>
-                      <p className="text-[#4b5563] mb-1">{product.category}</p>
+                      <p className="text-[#4b5563] mb-1">{product.category?.name || product.category}</p>
                       <span className="text-[#2563eb] font-bold text-base mb-2">₹{product.price}</span>
                       <div className="flex flex-wrap gap-1 mb-2">
                         {(product.tags || []).map((tag, idx) => (
@@ -450,13 +556,6 @@ const AdminPage = () => {
                 <div className="text-sm text-green-600">↗ +0.2 from last month</div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Enhanced Product Upload when in products tab */}
-        {activeTab === "products" && (
-          <div className="mt-8">
-            {/* Rest of products tab content already shown above */}
           </div>
         )}
       </main>

@@ -4,16 +4,17 @@ import "swiper/css";
 
 const ProductCard = ({ product, onClick, onEdit, onDelete }) => (
   <motion.div
-    className="bg-background bg-opacity-70 backdrop-blur-xl rounded-3xl shadow-glass border border-primary p-6 flex flex-col items-center cursor-pointer hover:shadow-neonPink hover:border-accent transition-all duration-300 relative overflow-hidden"
-    whileHover={{ scale: 1.05, rotate: -2 }}
+    className="bg-white rounded-3xl shadow-xl border border-gray-300 p-0 flex flex-col cursor-pointer hover:shadow-2xl hover:border-pink-500 transition-all duration-300 relative overflow-hidden min-h-[400px]"
+    whileHover={{ scale: 1.05, y: -8 }}
     onClick={() => onClick(product)}
   >
-    <div className="mb-4 w-full flex justify-center items-center">
+    {/* Image Section - Takes up most of the card */}
+    <div className="w-full h-64 flex justify-center items-center bg-gray-50 rounded-t-3xl overflow-hidden">
       {product.images && product.images.length > 1 ? (
-        <Swiper spaceBetween={10} slidesPerView={1} className="h-32 w-40 rounded-xl">
+        <Swiper spaceBetween={10} slidesPerView={1} className="h-full w-full">
           {product.images.map((img, idx) => (
             <SwiperSlide key={idx}>
-              <img src={img} alt={product.title} className="h-32 w-auto mx-auto rounded-xl drop-shadow-neonBlue object-cover" />
+              <img src={img} alt={product.title} className="h-full w-full object-cover" />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -21,19 +22,26 @@ const ProductCard = ({ product, onClick, onEdit, onDelete }) => (
         <img
           src={product.images?.[0] || product.image}
           alt={product.title}
-          className="h-32 w-auto mx-auto rounded-xl drop-shadow-neonBlue object-cover"
+          className="h-full w-full object-cover"
         />
       )}
     </div>
-    <h3 className="font-heading text-xl text-heading mb-2">{product.title}</h3>
-    <p className="text-text-muted mb-2">{product.category}</p>
-    <span className="text-primary font-bold text-lg mb-2">₹{product.price}</span>
+
+    {/* Content Section - Text and price at bottom */}
+    <div className="p-6 flex flex-col flex-grow">
+      <h3 className="font-heading text-2xl text-gray-900 mb-2 text-center font-semibold line-clamp-2">{product.title}</h3>
+      <p className="text-gray-700 mb-3 text-center italic text-sm">{product.category?.name || product.category}</p>
+      <div className="mt-auto">
+        <span className="text-pink-600 font-extrabold text-2xl block text-center">₹{product.price}</span>
+      </div>
+    </div>
+
     {/* Floating tag badges */}
-    <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+    <div className="absolute top-4 left-4 flex flex-wrap gap-2 max-w-[70%]">
       {(product.tags || []).map((tag, idx) => (
         <motion.span
           key={idx}
-          className="px-2.5 py-1 bg-accent text-heading rounded-full text-xs font-semibold shadow-neonBlue bg-opacity-90 backdrop-blur-sm border border-accent-dark"
+          className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-semibold shadow-md border border-pink-200"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.1, duration: 0.3 }}
@@ -43,16 +51,16 @@ const ProductCard = ({ product, onClick, onEdit, onDelete }) => (
       ))}
     </div>
     {/* Admin action buttons */}
-    <div className="absolute top-3 right-3 flex gap-2 z-10">
+    <div className="absolute top-4 right-4 flex gap-3 z-10">
       {onEdit && (
         <button
-          className="px-2 py-1 bg-accent text-heading rounded-lg text-xs font-bold shadow-neonBlue hover:bg-primary transition"
+          className="px-3 py-1 bg-pink-500 text-white rounded-lg text-sm font-bold shadow-lg hover:bg-pink-600 transition"
           onClick={e => { e.stopPropagation(); onEdit(product); }}
         >Edit</button>
       )}
       {onDelete && (
         <button
-          className="px-2 py-1 bg-red-500 text-heading rounded-lg text-xs font-bold shadow-neonPink hover:bg-red-700 transition"
+          className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm font-bold shadow-lg hover:bg-red-600 transition"
           onClick={e => { e.stopPropagation(); onDelete(product); }}
         >Delete</button>
       )}
@@ -62,7 +70,7 @@ const ProductCard = ({ product, onClick, onEdit, onDelete }) => (
 
 const ProductGrid = ({ products = [], onProductClick, onEdit, onDelete }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 max-w-screen-xl mx-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 max-w-screen-xl mx-auto px-4">
       {products.map((product) => (
         <ProductCard
           key={product._id || product.id}

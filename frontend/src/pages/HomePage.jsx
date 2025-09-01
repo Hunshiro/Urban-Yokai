@@ -1,6 +1,6 @@
 import React from "react";
 import Fox from "../assets/fox.png";
-import Background from "../assets/download.jpg" ;
+import Background from "../assets/bgyokai.jpg" ;
 import Katana from "../assets/kataana.jpg";
 import Header from "../components/Header";
 import Hero from "../components/Hero";
@@ -28,7 +28,7 @@ const featured = [
 
 const HomePage = () => {
   return (
-    <div className="bg-background min-h-screen flex flex-col">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 relative">
         <Hero />
@@ -47,14 +47,14 @@ const HomePage = () => {
             {featured.map((item) => (
               <motion.div
                 key={item.id}
-                className="bg-background bg-opacity-60 backdrop-blur-xl rounded-2xl shadow-glass border border-primary p-6 flex flex-col items-center hover:shadow-soft hover:border-accent transition-all"
-                whileHover={{ scale: 1.05 }}
+                className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 flex flex-col items-center hover:shadow-xl hover:border-blue-300 transition-all"
+                whileHover={{ scale: 1.03, y: -5 }}
               >
-                <img src={item.image} alt={item.title} className="h-24 w-auto mb-4 rounded-xl drop-shadow-[0_0_16px_#6366f1]" />
-                <h3 className="font-heading text-xl text-heading mb-2">{item.title}</h3>
-                <p className="text-text-muted mb-2">{item.desc}</p>
-                <span className="text-primary font-bold text-lg mb-2">₹{item.price}</span>
-                <button className="px-6 py-2 bg-accent text-heading rounded-2xl font-bold hover:bg-primary transition">Buy Now</button>
+                <img src={item.image} alt={item.title} className="h-24 w-auto mb-4 rounded-xl shadow-md" />
+                <h3 className="font-heading text-xl text-gray-800 mb-2">{item.title}</h3>
+                <p className="text-gray-600 mb-2">{item.desc}</p>
+                <span className="text-blue-600 font-bold text-lg mb-2">₹{item.price}</span>
+                <button className="px-6 py-2 bg-blue-500 text-white rounded-2xl font-bold hover:bg-blue-600 transition">Buy Now</button>
               </motion.div>
             ))}
           </div>
@@ -66,7 +66,7 @@ const HomePage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1 }}
         >
-          <a href="/shop" className="px-10 py-4 bg-primary text-heading rounded-2xl shadow-glass font-heading text-2xl hover:bg-accent transition scale-on-hover">Explore Full Collection</a>
+          <a href="/shop" className="px-10 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-2xl shadow-lg font-heading text-2xl hover:scale-105 transition-all">Explore Full Collection</a>
         </motion.div>
       </main>
       <Footer />
