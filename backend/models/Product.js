@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema({
   stock: { type: Number, default: 0 },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   subcategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' },
+  tags: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
 });
 

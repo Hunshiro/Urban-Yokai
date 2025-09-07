@@ -113,15 +113,24 @@ const ShopPage = ({ showToast }) => {
         </div>
         {/* Tags */}
         {product.tags && product.tags.length > 0 && (
-          <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-            {product.tags.slice(0, 2).map((tag, idx) => (
-              <span
-                key={idx}
-                className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full font-medium"
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+            {product.tags.slice(0, 2).map((tag, idx) => {
+              const colors = [
+                'bg-gradient-to-r from-blue-600 to-purple-600',
+                'bg-gradient-to-r from-purple-600 to-pink-600',
+                'bg-gradient-to-r from-pink-600 to-red-600',
+                'bg-gradient-to-r from-green-600 to-blue-600',
+                'bg-gradient-to-r from-yellow-600 to-orange-600'
+              ];
+              return (
+                <span
+                  key={idx}
+                  className={`px-3 py-1 ${colors[idx % colors.length]} text-white text-xs rounded-full font-semibold shadow-lg border border-white/30 backdrop-blur-sm`}
+                >
+                  {tag}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
@@ -178,26 +187,37 @@ const ShopPage = ({ showToast }) => {
       <Header />
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary via-purple-600 to-accent text-white">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100 text-gray-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-white/10"></div>
+        <div className="relative max-w-7xl mx-auto px-4 py-20">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-8 bg-gradient-to-r from-purple-900 via-pink-700 to-indigo-800 bg-clip-text text-transparent">
               Discover Amazing Products
             </h1>
-            <p className="text-xl opacity-90 mb-8">
-              Shop from our curated collection of premium products
+            <p className="text-xl mb-12 max-w-2xl mx-auto text-gray-700 leading-relaxed">
+              Shop from our curated collection of premium products with unbeatable quality and style
             </p>
-            <div className="max-w-md mx-auto relative">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-6 py-3 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50"
-              />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-accent text-white px-4 py-2 rounded-full hover:bg-accent/80 transition">
-                🔍
-              </button>
+            <div className="max-w-lg mx-auto">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-purple-400 text-xl">🔍</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search for amazing products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-purple-200 bg-white/95 backdrop-blur-sm placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-300/50 text-lg shadow-xl transition-all duration-300"
+                />
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                  <span className="text-lg">→</span>
+                </button>
+              </div>
+            </div>
+            <div className="mt-8 flex justify-center space-x-8 text-sm text-gray-600">
+              <span>🎌 Premium Quality</span>
+              <span>🚀 Fast Shipping</span>
+              <span>🛡️ Secure Payment</span>
             </div>
           </div>
         </div>

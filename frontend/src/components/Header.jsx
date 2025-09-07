@@ -82,7 +82,7 @@ const Header = () => {
               title={userProfile.name}
             />
           ) : (
-            <a href="/api/auth/google" className="px-6 py-2 bg-primary text-black rounded-2xl font-bold hover:bg-accent transition">Login</a>
+            <a href={`${import.meta.env.VITE_BACKEND_URL}api/auth/google`} className="px-6 py-2 bg-primary text-black rounded-2xl font-bold hover:bg-accent transition">Login</a>
           )}
         </div>
 

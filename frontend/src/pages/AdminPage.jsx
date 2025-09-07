@@ -23,6 +23,7 @@ const AdminPage = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterCategory, setFilterCategory] = React.useState("all");
   const [editingProduct, setEditingProduct] = React.useState(null);
+  const [showEditModal, setShowEditModal] = React.useState(false);
   // Authentication removed; anyone can access admin page
 
   const fetchProducts = () => {
@@ -41,6 +42,12 @@ const AdminPage = () => {
     fetchProducts();
     fetchCategories();
   }, []);
+
+  React.useEffect(() => {
+    if (editingProduct) {
+      setShowEditModal(true);
+    }
+  }, [editingProduct]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -559,7 +566,35 @@ const AdminPage = () => {
           </div>
         )}
       </main>
-      
+
+      {/* Edit Product Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-3xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-heading text-2xl text-heading">Edit Product</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingProduct(null);
+                }}
+                className="text-text hover:text-heading text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <ProductUploadForm
+              editingProduct={editingProduct}
+              onProductUploaded={(product) => {
+                fetchProducts();
+                setShowEditModal(false);
+                setEditingProduct(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

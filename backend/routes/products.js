@@ -59,4 +59,63 @@ router.get('/', async (req, res) => {
   }
 });
 
+// 📌 Update product by ID
+router.put('/:id', upload.array('images', 5), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, price, category, subcategory, stock, tags } = req.body;
+
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "rapcod-products",
+        });
+        imageUrls.push(result.secure_url);
+        fs.unlinkSync(file.path);
+      }
+    }
+
+    const tagArr = tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    const updateData = {
+      title,
+      description,
+      price,
+      category,
+      subcategory,
+      stock,
+      tags: tagArr,
+    };
+
+    if (imageUrls.length > 0) {
+      updateData.images = imageUrls;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.json(updatedProduct);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 📌 Delete product by ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedProduct = await Product.findByIdAndDelete(id);
+    if (!deletedProduct) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    res.json({ message: "Product deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

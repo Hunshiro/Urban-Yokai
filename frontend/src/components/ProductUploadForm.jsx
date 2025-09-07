@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const ProductUploadForm = ({ onProductUploaded }) => {
+const ProductUploadForm = ({ onProductUploaded, editingProduct }) => {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -28,6 +28,21 @@ const ProductUploadForm = ({ onProductUploaded }) => {
       setForm(prev => ({ ...prev, subcategory: "" }));
     }
   }, [form.category]);
+
+  useEffect(() => {
+    if (editingProduct) {
+      setForm({
+        title: editingProduct.title || "",
+        description: editingProduct.description || "",
+        price: editingProduct.price || "",
+        category: editingProduct.category?._id || editingProduct.category || "",
+        subcategory: editingProduct.subcategory?._id || editingProduct.subcategory || "",
+        stock: editingProduct.stock || "",
+        tags: editingProduct.tags ? editingProduct.tags.join(', ') : "",
+        images: [],
+      });
+    }
+  }, [editingProduct]);
 
   const fetchCategories = async () => {
     try {
@@ -88,35 +103,40 @@ const ProductUploadForm = ({ onProductUploaded }) => {
     });
 
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const method = editingProduct ? "PUT" : "POST";
+      const url = editingProduct ? `/api/products/${editingProduct._id || editingProduct.id}` : "/api/products";
+
+      const res = await fetch(url, {
+        method,
         body: data,
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(errorData.error || "Upload failed");
+        const errorData = await res.json().catch(() => ({ error: "Failed" }));
+        throw new Error(errorData.error || "Failed");
       }
 
       const product = await res.json();
 
-      // Reset form only on success
-      setForm({
-        title: "",
-        description: "",
-        price: "",
-        category: "",
-        subcategory: "",
-        stock: "",
-        tags: "",
-        images: []
-      });
+      // Reset form only on success for new products
+      if (!editingProduct) {
+        setForm({
+          title: "",
+          description: "",
+          price: "",
+          category: "",
+          subcategory: "",
+          stock: "",
+          tags: "",
+          images: []
+        });
+      }
 
       if (onProductUploaded) onProductUploaded(product);
 
     } catch (err) {
-      console.error("Upload error:", err);
-      setError(err.message || "Failed to upload product. Please try again.");
+      console.error("Error:", err);
+      setError(err.message || "Failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -124,7 +144,7 @@ const ProductUploadForm = ({ onProductUploaded }) => {
 
   return (
     <form className="bg-background bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-glass p-8 mb-8 max-w-lg mx-auto" onSubmit={handleSubmit} encType="multipart/form-data">
-      <h3 className="font-heading text-2xl text-heading mb-6">Upload New Product</h3>
+      <h3 className="font-heading text-2xl text-heading mb-6">{editingProduct ? "Edit Product" : "Upload New Product"}</h3>
   <input name="title" value={form.title} onChange={handleChange} placeholder="Title" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
   <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
   <input name="price" value={form.price} onChange={handleChange} placeholder="Price" type="number" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
@@ -158,9 +178,9 @@ const ProductUploadForm = ({ onProductUploaded }) => {
   </select>
   <input name="stock" value={form.stock} onChange={handleChange} placeholder="Stock" type="number" className="w-full mb-4 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
   <input name="tags" value={form.tags} onChange={handleChange} placeholder="Tags (comma separated)" className="w-full mb-4 px-4 py-2 rounded-3xl border border-accent bg-background text-text-base" />
-  <input name="images" type="file" accept="image/*" multiple onChange={handleChange} className="w-full mb-6 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required />
+  <input name="images" type="file" accept="image/*" multiple onChange={handleChange} className="w-full mb-6 px-4 py-2 rounded-3xl border border-secondary bg-background text-text-base" required={!editingProduct} />
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      <button type="submit" className="w-full px-6 py-3 bg-primary text-heading rounded-3xl font-bold hover:bg-accent transition" disabled={loading}>{loading ? "Uploading..." : "Upload Product"}</button>
+      <button type="submit" className="w-full px-6 py-3 bg-primary text-heading rounded-3xl font-bold hover:bg-accent transition" disabled={loading}>{loading ? (editingProduct ? "Updating..." : "Uploading...") : (editingProduct ? "Update Product" : "Upload Product")}</button>
     </form>
   );
 };

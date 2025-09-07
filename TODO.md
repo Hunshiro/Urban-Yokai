@@ -1,17 +1,14 @@
-# TODO for Category-Subcategory-Product Linking Feature
+# TODO: Fix UI in Shop Page
 
-- [x] Update backend products route to populate category and subcategory references.
-- [x] Update ProductUploadForm to include category and subcategory selection with dynamic subcategory loading.
-- [x] Update AdminPage to display categories with subcategories and adjust product display accordingly.
-- [x] Fix category routes mounting in backend/index.js.
-- [x] Update ProductUploadForm and AdminPage to use dynamic category dropdowns.
-- [x] Fix React rendering error when displaying category objects in AdminPage.
-- [x] Improve ProductUploadForm error handling and prevent multiple submissions.
-- [x] Fix ShopPage filtering logic to handle category/subcategory objects.
-- [x] Fix missing React imports in ShopPage component.
-- [x] Fix ProductGrid component to display category names properly.
-- [x] Fix ProductModal component to display category names properly.
-- [ ] Test product creation with category and subcategory selection.
-- [ ] Test product listing to verify category and subcategory display.
-- [ ] Verify admin page tabs and forms work as expected.
-- [ ] Fix any bugs or UI issues found during testing.
+## Tasks
+- [x] Improve hero section (Discover Amazing Products and search box div)
+  - [x] Changed to light theme with white background and gray text
+  - [x] Improved search bar with border, better focus styles, and increased padding
+  - [x] Enhanced spacing and alignment for better visual balance
+  - [x] Ensure responsiveness and consistent padding/margin
+- [x] Fix product tag UI
+  - [x] Improved tag badge styling with better background, shadow, and border
+  - [x] Adjusted font weight, padding, and gap for cleaner look
+  - [x] Ensure tags wrap nicely without overflow
+- [ ] Test responsiveness and visual appearance on different screen sizes
+- [ ] Verify no regressions in other parts of the page
