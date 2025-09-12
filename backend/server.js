@@ -12,7 +12,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: process.env.CLIENT_URL || process.env.FRONTEND_URL, // React frontend
+  origin:  process.env.FRONTEND_URL, // React frontend
   credentials: true
 }));
 
@@ -48,3 +48,4 @@ app.get('/', (req, res) => res.send('API running...'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
